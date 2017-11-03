@@ -16,6 +16,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -61,10 +62,6 @@ public abstract class TileEntityEngine extends TileEntityInventory implements IH
 	protected final IMjConnector mjConnector = createConnector();
 	protected final MjCapabilityHelper mjCaps = new MjCapabilityHelper(mjConnector);
 
-	@SideOnly(Side.CLIENT)
-	protected final ModelVariableData modelData = new ModelVariableData();
-
-
 	@GuiSynced
 	protected double heat = TileEngineBase_BC8.MIN_HEAT;
 	protected EnumPowerStage powerStage = EnumPowerStage.BLUE;
@@ -77,7 +74,13 @@ public abstract class TileEntityEngine extends TileEntityInventory implements IH
 	protected float lastProgress;
 
 
+	protected ModelVariableData modelData;
+
 	public TileEntityEngine() {
+		if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
+			modelData = new ModelVariableData();
+		}
+
 		redstone = addComponent(new Redstone(this));
 	}
 

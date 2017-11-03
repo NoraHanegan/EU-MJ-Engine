@@ -12,6 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -46,13 +47,14 @@ public class MagicModelLoader {
 	public enum Engine {
 		SLOW_ELECTRIC_ENGINE, REGULAR_ELECTRIC_ENGINE, FAST_ELECTRIC_ENGINE, QUICK_ELECTRIC_ENGINE, ADJUSTABLE_ELECTRIC_ENGINE;
 
-		private final ModelHolderVariable model;
-		private final ModelResourceLocation item;
-
+		private ModelHolderVariable model;
+		private ModelResourceLocation item;
 
 		private Engine() {
-			model = new ModelHolderVariable(EngineMod.MODID+":models/block/"+name().toLowerCase(Locale.ENGLISH)+".json", fnCtx);
-			item = new ModelResourceLocation(new ResourceLocation(EngineMod.MODID, "models/item/"+name().toLowerCase(Locale.ENGLISH)), "inventory");
+			if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
+				model = new ModelHolderVariable(EngineMod.MODID + ":models/block/" + name().toLowerCase(Locale.ENGLISH) + ".json", fnCtx);
+				item = new ModelResourceLocation(new ResourceLocation(EngineMod.MODID, "models/item/" + name().toLowerCase(Locale.ENGLISH)), "inventory");
+			}
 		}
 
 		@SideOnly(Side.CLIENT)
