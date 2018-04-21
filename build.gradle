@@ -38,7 +38,7 @@ minecraft {
     version = "1.12.2-14.23.1.2599"
     runDir = "run"
     replace "@VERSION@", project.version
-    
+
     mappings = "snapshot_20171003"
     makeObfSourceJar = false
 }
@@ -68,11 +68,11 @@ processResources {
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+
         // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
-        
+
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'

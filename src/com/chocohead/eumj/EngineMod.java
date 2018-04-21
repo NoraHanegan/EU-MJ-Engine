@@ -202,7 +202,7 @@ public final class EngineMod {
 			GuideThings.addTags();
 		}
 	}
-	
+
 	private static ItemStack anyCharge(ItemStack stack) {
 		return StackUtil.copyWithWildCard(stack);
 	}
