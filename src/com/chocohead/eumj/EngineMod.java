@@ -3,8 +3,8 @@ package com.chocohead.eumj;
 import static com.chocohead.eumj.EngineMod.MODID;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 
 import net.minecraft.creativetab.CreativeTabs;
@@ -16,7 +16,6 @@ import net.minecraft.util.EnumActionResult;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -65,29 +64,18 @@ public final class EngineMod {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		loadConfig(event.getSuggestedConfigurationFile());
-		event.getModLog().info("Running with "+(Conversion.MJperEU / MjAPI.MJ)+" MJ per EU or "+(MjAPI.MJ / Conversion.MJperEU)+" EU per MJ");
+		event.getModLog().info("Running with "+Conversion.MJperEU / MjAPI.MJ+" MJ per EU or "+MjAPI.MJ / Conversion.MJperEU+" EU per MJ");
 
-		proxy.preInit();
-	}
-
-	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		proxy.init();
-	}
-
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		proxy.postInit();
-	}
-
-	/* Conversion Laws/Equations/Rules */
-	public static class Conversion {
-		static double MJperEU = MjAPI.MJ * 2 / 5;
-		public static double MJtoEU(long microjoules) {
-			return microjoules / MJperEU;
+		//Blocks
+		engine = TeBlockRegistry.get(Engine_TEs.IDENTITY);
+		engine.setCreativeTab(TAB);
+		//Items
+		if (BCModules.TRANSPORT.isLoaded()) {
+			readerMJ = new ItemReaderMJ();
 		}
-		public static long EUtoMJ(double EU) {
-			return (long) (EU * MJperEU);
+
+		if (event.getSide().isClient()) {
+			if (readerMJ != null) readerMJ.registerModels(null);
 		}
 	}
 

@@ -192,7 +192,7 @@ public abstract class TileEntityEngine extends TileEntityInventory implements IH
 	}
 
 	protected void updateHeatLevel() {
-		heat = ((TileEngineBase_BC8.MAX_HEAT - TileEngineBase_BC8.MIN_HEAT) * getPowerLevel()) + TileEngineBase_BC8.MIN_HEAT;
+		heat = (TileEngineBase_BC8.MAX_HEAT - TileEngineBase_BC8.MIN_HEAT) * getPowerLevel() + TileEngineBase_BC8.MIN_HEAT;
 	}
 	// <<< Heat
 	// Power Stage + Speed >>>
@@ -380,7 +380,7 @@ public abstract class TileEntityEngine extends TileEntityInventory implements IH
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		if (facing == getFacing()) return mjCaps.hasCapability(capability, facing) ||
-				(capability != CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && super.hasCapability(capability, facing));
+				capability != CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && super.hasCapability(capability, facing);
 		return super.hasCapability(capability, facing);
 	}
 

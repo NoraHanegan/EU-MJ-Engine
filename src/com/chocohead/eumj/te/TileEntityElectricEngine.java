@@ -58,7 +58,7 @@ public abstract class TileEntityElectricEngine extends TileEntityEngine implemen
 	public final InvSlotUpgrade upgrade;
 
 	@GuiSynced
-	protected boolean active = false;
+	protected boolean engineActive = false;
 
 	public TileEntityElectricEngine(int tier) {
 		this.tier = tier;
@@ -137,12 +137,12 @@ public abstract class TileEntityElectricEngine extends TileEntityEngine implemen
 		double input = Conversion.MJtoEU(output);
 
 		if (energy.canUseEnergy(input) && redstone.hasRedstoneInput()) {
-			active = true;
+			engineActive = true;
 
 			addPower(output);
 			energy.useEnergy(input);
 		} else {
-			active = false;
+			engineActive = false;
 		}
 	}
 
@@ -179,7 +179,8 @@ public abstract class TileEntityElectricEngine extends TileEntityEngine implemen
 	public GuiScreen getGui(EntityPlayer player, boolean isAdmin) {
 		GuiNode node = GuiParser.parse(teBlock);
 		DynamicBridgeGUI<TileEntityElectricEngine> gui = makeBridge(player, node, isAdmin);
-		gui.getWrappedGUI().ledgersRight.ledgers.add(new LedgerIEngine(gui.getWrappedGUI().ledgersRight, this));
+		gui.addHelpLedger();
+		gui.getWrappedGUI().shownElements.add(new LedgerIEngine(gui.getWrappedGUI(), this));
 		gui.addElementProducer(new Consumer<Consumer<IGuiElement>>() {
 			private IGuiArea makeArea(SlotNode node) {
 				return new GuiRectangle(node.x, node.y, node.style.width, node.style.height).offset(gui.getWrappedGUI().rootElement);
@@ -234,7 +235,7 @@ public abstract class TileEntityElectricEngine extends TileEntityEngine implemen
 	@Override
 	@SideOnly(Side.CLIENT)
 	public long getActiveOutput() {
-		return active ? getOutput() : 0;
+		return engineActive ? getOutput() : 0;
 	}
 	// << IHasGUI
 
