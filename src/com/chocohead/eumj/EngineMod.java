@@ -18,76 +18,38 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-import buildcraft.api.BCBlocks.Core;
-import buildcraft.api.BCItems;
-import buildcraft.api.BCModules;
-import buildcraft.api.blocks.CustomRotationHelper;
-import buildcraft.api.enums.EnumEngineType;
 import buildcraft.api.mj.MjAPI;
-import buildcraft.transport.BCTransportItems;
 
 import ic2.api.event.TeBlockFinalCallEvent;
-import ic2.api.item.IC2Items;
-import ic2.api.recipe.Recipes;
 
-import ic2.core.block.BlockTileEntity;
-import ic2.core.block.TeBlockRegistry;
-import ic2.core.item.ItemIC2;
-import ic2.core.util.StackUtil;
+@Mod
+(
+	modid 		 = EngineMod.MODID,
+	name		 = EngineMod.MODNAME,
+	dependencies = EngineMod.DEPENDENCIES,
+	version		 = EngineMod.VERSION
+)
 
-import com.chocohead.eumj.item.ItemReaderMJ;
-import com.chocohead.eumj.te.Engine_TEs;
-import com.chocohead.eumj.te.TileEntityEngine;
-
-@Mod(modid=MODID, name="EU-MJ Engine", dependencies="required-after:ic2;required-after:buildcraftenergy@[7.99.22, 7.99.24.6];after:buildcrafttransport", version="@VERSION@")
 public final class EngineMod {
-	public static final String MODID = "eu-mj_engine";
-	public static final CreativeTabs TAB = new CreativeTabs("EU-MJ Engine") {
-		private ItemStack[] items;
-		private int ticker;
 
-		@Override
-		@SideOnly(Side.CLIENT)
-		public ItemStack getIconItemStack() {
-			if (++ticker >= 500) {
-				ticker = 0;
-			}
+	/* Meta Data */
+	public static final String MODID 		= "eu-mj_engine";
+	public static final String MODNAME 		= "EU-MJ Engine";
+	public static final String DEPENDENCIES = "required-after:ic2;required-after:buildcraftenergy@[7.99.7];after:buildcrafttransport";
+	public static final String VERSION 		= "@VERSION@";
 
-			if (items == null) {
-				items = new ItemStack[5];
+	/* Proxy */
+	@SidedProxy(clientSide = "com.chocohead.eumj.ClientProxy", serverSide = "com.chocohead.eumj.ServerProxy")
+	public static CommonProxy proxy;
 
-				for (int i = 0; i < Engine_TEs.VALUES.length; i++) {
-					items[i] = engine.getItemStack(Engine_TEs.VALUES[i]);
-				}
-			}
-
-			assert ticker / 100 < items.length;
-			return items[ticker / 100];
-		}
-
-		@Override
-		@SideOnly(Side.CLIENT)
-		public ItemStack getTabIconItem() {
-			return null; //Only normally called from getIconItemStack
-		}
-
-		@Override
-		@SideOnly(Side.CLIENT)
-		public String getTranslatedTabLabel() {
-			return MODID + ".creative_tab";
-		}
-	};
-
-	public static BlockTileEntity engine;
-	public static ItemIC2 readerMJ;
+	/** Initialization Events **/
 
 	@EventHandler
 	public void construction(FMLConstructionEvent event) {
@@ -96,10 +58,7 @@ public final class EngineMod {
 
 	@SubscribeEvent
 	public void register(TeBlockFinalCallEvent event) {
-		TeBlockRegistry.addAll(Engine_TEs.class, Engine_TEs.IDENTITY);
-		TeBlockRegistry.addCreativeRegisterer((list, block, item, tab) -> {
-			if (tab == TAB || tab == CreativeTabs.SEARCH) Arrays.stream(Engine_TEs.VALUES).filter(Engine_TEs::hasItem).forEach(type -> list.add(block.getItemStack(type)));
-		}, Engine_TEs.IDENTITY);
+		proxy.register();
 	}
 
 	@EventHandler
@@ -120,6 +79,7 @@ public final class EngineMod {
 		}
 	}
 
+	/* Import/Load and evaluate Configuration File */
 	private void loadConfig(File file) {
 		Configuration config = new Configuration(file);
 
@@ -133,99 +93,6 @@ public final class EngineMod {
 			if (config.hasChanged()) {
 				config.save();
 			}
-		}
-	}
-
-	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		Engine_TEs.buildDummies(event.getSide().isClient());
-
-		if (Core.ENGINE != null) {
-			Recipes.advRecipes.addRecipe(engine.getItemStack(Engine_TEs.slow_electric_engine),
-					"B", "E", "C",
-					'B', anyCharge(IC2Items.getItem("re_battery")),
-					'E', new ItemStack(Core.ENGINE, 1, EnumEngineType.STONE.ordinal()),
-					'C', IC2Items.getItem("crafting", "circuit"));
-
-			Recipes.advRecipes.addRecipe(engine.getItemStack(Engine_TEs.regular_electric_engine),
-					"B", "E", "C",
-					'B', anyCharge(IC2Items.getItem("re_battery")),
-					'E', new ItemStack(Core.ENGINE, 1, EnumEngineType.IRON.ordinal()),
-					'C', IC2Items.getItem("crafting", "circuit"));
-
-			Recipes.advRecipes.addRecipe(engine.getItemStack(Engine_TEs.fast_electric_engine),
-					"BBB", "EPE", "CPC",
-					'B', anyCharge(IC2Items.getItem("advanced_re_battery")),
-					'E', new ItemStack(Core.ENGINE, 1, EnumEngineType.IRON.ordinal()),
-					'P', IC2Items.getItem("crafting", "alloy"),
-					'C', IC2Items.getItem("crafting", "circuit"));
-
-			Recipes.advRecipes.addRecipe(engine.getItemStack(Engine_TEs.quick_electric_engine),
-					"BPB", "EEE", "CPC",
-					'B', anyCharge(IC2Items.getItem("energy_crystal")),
-					'E', new ItemStack(Core.ENGINE, 1, EnumEngineType.IRON.ordinal()),
-					'P', IC2Items.getItem("crafting", "alloy"),
-					'C', IC2Items.getItem("crafting", "advanced_circuit"));
-
-			Recipes.advRecipes.addRecipe(engine.getItemStack(Engine_TEs.adjustable_electric_engine),
-					"BCB", "EEE", "MTM",
-					'B', anyCharge(IC2Items.getItem("lapotron_crystal")),
-					'E', new ItemStack(Core.ENGINE, 1, EnumEngineType.IRON.ordinal()),
-					'C', IC2Items.getItem("crafting", "advanced_circuit"),
-					'M', IC2Items.getItem("resource", "advanced_machine"),
-					'T', IC2Items.getItem("te", "hv_transformer"));
-		}
-
-		if (readerMJ != null && BCItems.Core.GEAR_GOLD != null && BCTransportItems.pipePowerWood != null) {
-			Collection<ItemStack> pipes = new HashSet<>();
-
-			for (Item pipe : new Item[] {BCTransportItems.pipePowerCobble, BCTransportItems.pipePowerStone,
-					BCTransportItems.pipePowerQuartz, BCTransportItems.pipePowerGold, BCTransportItems.pipePowerSandstone}) {
-				if (pipe != null) {
-					pipes.add(new ItemStack(pipe));
-				}
-			}
-
-			if (!pipes.isEmpty()) {
-				Recipes.advRecipes.addRecipe(new ItemStack(readerMJ),
-						" D ", "PGP", "p p",
-						'D', Items.GLOWSTONE_DUST,
-						'G', BCItems.Core.GEAR_GOLD,
-						'P', pipes,
-						'p', BCTransportItems.pipePowerWood);
-			}
-		}
-
-		if (event.getSide().isClient()) {
-			//BuildCraft Lib loads pages in post-init, but it also loads first, so we do this here
-			GuideThings.addLoaders();
-			GuideThings.addTags();
-		}
-	}
-
-	private static ItemStack anyCharge(ItemStack stack) {
-		return StackUtil.copyWithWildCard(stack);
-	}
-
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		CustomRotationHelper.INSTANCE.registerHandler(engine, (world, pos, state, side) -> {
-			TileEntity te = world.getTileEntity(pos);
-
-			return te instanceof TileEntityEngine && ((TileEntityEngine) te).trySpin(side.getOpposite()) ? EnumActionResult.SUCCESS : EnumActionResult.FAIL;
-		});
-	}
-
-
-	public static class Conversion {
-		static double MJperEU = MjAPI.MJ * 2 / 5;
-
-		public static double MJtoEU(long microjoules) {
-			return microjoules / MJperEU;
-		}
-
-		public static long EUtoMJ(double EU) {
-			return (long) (EU * MJperEU);
 		}
 	}
 }

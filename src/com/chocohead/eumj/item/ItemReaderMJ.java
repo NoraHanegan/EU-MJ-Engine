@@ -3,6 +3,7 @@ package com.chocohead.eumj.item;
 import java.util.EnumMap;
 import java.util.Map;
 
+import com.chocohead.eumj.CommonProxy;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -40,7 +41,7 @@ public class ItemReaderMJ extends ItemIC2 implements IHandHeldInventory, IBoxabl
 	public ItemReaderMJ() {
 		super(null);
 
-		BlocksItems.registerItem(this, new ResourceLocation(EngineMod.MODID, NAME)).setUnlocalizedName(NAME).setCreativeTab(EngineMod.TAB);
+		GameRegistry.register(this, new ResourceLocation(EngineMod.MODID, NAME)).setUnlocalizedName(NAME).setCreativeTab(CommonProxy.EUMJ_TAB);
 
 		maxStackSize = 1;
 		setMaxDamage(0);
